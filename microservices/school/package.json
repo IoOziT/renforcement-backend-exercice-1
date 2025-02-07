@@ -1,0 +1,32 @@
+{
+  "name": "school",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "packageManager": "pnpm@9.5.0",
+  "scripts": {
+    "build": "tsc",
+    "build:types": "pnpm exec tsc --emitDeclarationOnly"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "imports": {
+    "#pkg": "./package.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "@types/pg": "^8.11.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "@hono/zod-validator": "^0.4.2",
+    "consul": "^2.0.1",
+    "hono": "^4.6.20",
+    "kysely": "^0.27.5",
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  }
+}

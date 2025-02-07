@@ -1,0 +1,27 @@
+{
+  "name": "student",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:types": "pnpm exec tsc --emitDeclarationOnly"
+  },
+  "keywords": [],
+  "author": "Théo Charron",
+  "license": "ISC",
+  "imports": {
+    "#pkg": "./package.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "consul": "^2.0.1",
+    "hono": "^4.6.20",
+    "mongodb": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "school": "link:../school",
+    "typescript": "^5.7.3"
+  }
+}

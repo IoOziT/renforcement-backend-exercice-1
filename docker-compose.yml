@@ -1,0 +1,121 @@
+name: renforcement_backend
+services:
+  consul:
+    image: hashicorp/consul
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'",
+        ]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  postgres-db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DATABASE_URL}"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./microservices/auth/migrations:/docker-entrypoint-initdb.d/auth
+      - ./microservices/school/migrations:/docker-entrypoint-initdb.d/school
+      - ./scripts/nested-migrations.sh:/docker-entrypoint-initdb.d/nested-migrations.sh
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_HEADER_PREFIX: Bearer
+    depends_on:
+      consul:
+        condition: service_started
+        restart: true
+    links:
+      - consul:service-discovery
+  auth-microservice:
+    scale: 3
+    build:
+      context: microservices/auth
+      dockerfile: Dockerfile
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_DATABASE_URL: ${POSTGRES_DATABASE_URL}
+    depends_on:
+      consul:
+        condition: service_started
+        restart: true
+      postgres-db:
+        condition: service_healthy
+        restart: true
+    links:
+      - consul:service-discovery
+  school-microservice:
+    profiles:
+      - school
+    scale: 3
+    build:
+      context: microservices/school
+      dockerfile: Dockerfile
+    environment:
+      SCHOOL_DATABASE_URL: ${POSTGRES_DATABASE_URL}
+    depends_on:
+      consul:
+        condition: service_started
+        restart: true
+      postgres-db:
+        condition: service_healthy
+        restart: true
+    links:
+      - consul:service-discovery
+      - api-gateway
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: student-microservice
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    volumes:
+      - mongo-data:/data/db
+      - ./microservices/student/migrations:/docker-entrypoint-initdb.d
+  student-microservice:
+    profiles:
+      - student
+    scale: 3
+    build:
+      context: microservices
+      dockerfile: student/Dockerfile
+    environment:
+      STUDENT_DATABASE_URL: mongodb://mongodb/
+    depends_on:
+      consul:
+        condition: service_started
+        restart: true
+      mongodb:
+        condition: service_healthy
+      school-microservice:
+        condition: service_healthy
+    links:
+      - consul:service-discovery
+      - api-gateway
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+  mongo-data:

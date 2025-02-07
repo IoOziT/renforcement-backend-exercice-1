@@ -1,0 +1,24 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "packageManager": "pnpm@9.5.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.8",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "@types/node": "^22.13.1",
+    "consul": "^2.0.1",
+    "hono": "^4.6.20",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
